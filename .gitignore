@@ -1,2 +1,8 @@
 # app virtual env
 appvenv
+
+# pycache 
+__pycache__
+
+# env file 
+.env
