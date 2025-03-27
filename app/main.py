@@ -1,9 +1,40 @@
 import uvicorn
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from app.routers import admin,album,auth,song,stat,user
 
-app = FastAPI()
+from contextlib import asynccontextmanager
+
+from fastapi import FastAPI, HTTPException, status
+from fastapi.middleware.cors import CORSMiddleware
+
+from app.core.config import Settings
+from app.db.connection import DatabaseConnection
+from app.routers import admin,album,auth,song,stat,user
+from app.dependencies.dependencies import get_settings
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    db_instance: DatabaseConnection | None = None
+    try :
+
+        settings: Settings  = get_settings()
+        db_instance = DatabaseConnection(settings=settings)
+
+        await db_instance.create_index()
+
+        yield
+
+    except Exception as err :
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Server is down. Unable to initialize resources."
+        )
+
+    finally :
+        if db_instance :
+            db_instance.close_connection()
+
+
+app = FastAPI(lifespan=lifespan)
 
 app.include_router(admin.router)
 app.include_router(album.router)
