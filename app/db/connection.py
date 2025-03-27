@@ -4,12 +4,12 @@ from motor.motor_asyncio import AsyncIOMotorClient,AsyncIOMotorDatabase,AsyncIOM
 class DatabaseConnection() :
     _instance = None
 
-    def __new__(cls,settings:Setting) :
+    def __new__(cls, settings: Setting) :
         if cls._instance is None :
             cls._instance = super(DatabaseConnection,cls).__new__(cls)
             cls._instance._init_db(settings)
         return cls._instance
-            
+
     def _init_db(self, settings: Setting):
         self.client: AsyncIOMotorClient = AsyncIOMotorClient(settings.MONGO_URI)
         self.db: AsyncIOMotorDatabase = self.client.get_database(settings.MONGO_DBNAME)
@@ -24,6 +24,6 @@ class DatabaseConnection() :
         return None
 
     def close_connection(self) :
-        self.client.close()    
+        self.client.close()
 
 
