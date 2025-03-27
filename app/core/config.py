@@ -16,6 +16,10 @@ class Settings(BaseSettings) :
     MONGO_USERNAME: str = "default_user" #  use env var
     MONGO_PASSWORD: str = "default_password" # use env var
     MONGO_DBNAME: str = "default_db" # use env var
+    CLERK_SECRET_KEY: str = "default_clerk_secret_key" # use env var
+    CLOUDINARY_SECRET_KEY: str = "default_cloudinary_secret_key" # use env var
+    CLOUDINARY_API_KEY: str = "default_cloudianry_api_key" # use env var
+    CLOUDINARY_CLOUD_NAME: str = "default_cloudinary_cloud_name" # use env var
 
     @property
     def MONGO_URI(self) -> str:
