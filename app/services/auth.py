@@ -12,16 +12,18 @@ class AuthService():
     def __init__(self, db_instance: DatabaseConnection):
         self.db_instance = db_instance
 
-    async def authCallback(self, user_data: UserIn) -> dict:
+    async def auth_callback(self, user_auth_data: UserIn) -> dict:
         try :
 
-            user_doc = await self.db_instance.users.find_one({"_id": user_data._id})
+            user_doc = await self.db_instance.users.find_one({"_id": user_auth_data._id})
 
             if not user_doc:
-                user: UserDB = UserDB(**user_data.model_dump())
-                result: InsertOneResult = await self.db_instance.users.insert_one(user.model_dump())
+                user_db_dict = user_auth_data.model_dump()
+                user_db_dict['full_name'] = user_auth_data.first_name + user_auth_data.last_name
+                user: UserDB = UserDB(**user_db_dict)
+                insert_result: InsertOneResult = await self.db_instance.users.insert_one(user.model_dump())
 
-                if not result.inserted_id:
+                if not insert_result.inserted_id:
                     raise InternalServerError()
 
             return {'success': True}

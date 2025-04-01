@@ -11,3 +11,7 @@ class UserDB(BaseModel):
                                     title="Created At",
                                     description="Timestamp when the user was created"
                                 )
+
+    model_config = {
+        "extra": "ignore",
+    }
