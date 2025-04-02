@@ -1,8 +1,8 @@
 from datetime import datetime, timezone
-from pydantic import BaseModel,EmailStr,HttpUrl,Field
+from pydantic import BaseModel,EmailStr,HttpUrl,Field,field_serializer
 
 class UserDB(BaseModel):
-    _id: str = Field(title="_id",description="clerkId value is used as user's _id")
+    id: str = Field(title="Id",description="clerkId value is used as user's _id",alias="_id")
     full_name: str = Field(title="Full Name",description="User's full name")
     email: EmailStr = Field(title="Email",description="User's email must be unique")
     image_url: HttpUrl = Field(title="Image Url",description="User's profile image")
@@ -12,6 +12,11 @@ class UserDB(BaseModel):
                                     description="Timestamp when the user was created"
                                 )
 
+    @field_serializer('image_url')
+    def serialize_image_url(self, value: HttpUrl, _info):
+        return str(value)
+
     model_config = {
         "extra": "ignore",
+        "populate_by_name": True,
     }
