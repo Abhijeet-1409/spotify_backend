@@ -2,14 +2,17 @@ import asyncio
 
 import cloudinary
 
-from typing import Annotated
+from typing import Annotated, Optional
 
 from functools import lru_cache
 
-from fastapi import Depends, Request, HTTPException, status
+from pydantic import ValidationError
+
+from fastapi import Depends, Form, Request, HTTPException, status
 
 from app.core.config import Settings
 from app.db.connection import DatabaseConnection
+from app.schemas.song import SongIn
 from app.services.auth import AuthService
 from app.errors.exceptions import InternalServerError
 
@@ -82,3 +85,28 @@ def init_cloudinary(settings: Settings) -> None :
         api_secret = settings.CLOUDINARY_SECRET_KEY,
         secure=True
     )
+
+def extract_song_data(
+        title: Annotated[str, Form(title="Title",description="Song's title")],
+        artist: Annotated[str, Form(title="Artist",description="Artist's Name")],
+        duration: Annotated[int, Form(title="Duration",description="Song's duration")],
+        album_id: Annotated[
+                    Optional[str],
+                    Form(
+                        title="Album Id",
+                        description="Reference to album which song belongs to"
+                    )
+                ] = None
+    ) -> SongIn :
+
+    try :
+        return SongIn(title=title,artist=artist,duration=duration,album_id=album_id)
+
+    except ValidationError as validation_err:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+             detail=[{"loc": err["loc"], "msg": err["msg"]} for err in validation_err.errors()]
+        )
+
+    except Exception as err:
+        raise InternalServerError() from err
