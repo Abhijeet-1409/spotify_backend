@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import Settings
 from app.db.connection import DatabaseConnection
 from app.routers import admin,album,auth,song,stat,user
-from app.dependencies.dependencies import get_settings
+from app.dependencies.dependencies import get_settings, init_cloudinary
 
 
 @asynccontextmanager
@@ -18,6 +18,8 @@ async def lifespan(app: FastAPI):
 
         settings: Settings  = get_settings()
         db_instance = DatabaseConnection(settings=settings)
+
+        init_cloudinary(settings=settings)
 
         await db_instance.create_index()
 

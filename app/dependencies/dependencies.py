@@ -1,5 +1,7 @@
 import asyncio
 
+import cloudinary
+
 from typing import Annotated
 
 from functools import lru_cache
@@ -72,3 +74,11 @@ async def require_admin(settings: Annotated[Settings, Depends(get_settings)], cl
         raise admin_exception
 
     return clerk_user
+
+def init_cloudinary(settings: Settings) -> None :
+    cloudinary.config(
+        cloud_name = settings.CLOUDINARY_CLOUD_NAME,
+        api_key = settings.CLOUDINARY_API_KEY,
+        api_secret = settings.CLOUDINARY_SECRET_KEY,
+        secure=True
+    )
