@@ -120,7 +120,7 @@ def custom_file_validation(max_size_mb: int, file_type: str):
     allowed_audio_formats: List[str] = ["mp3", "wav", "flac", "aac", "ogg"]
 
     async def validate_file(file: UploadFile) -> UploadFile:
-        await file.seek(0, 2)
+        file.file.seek(0, os.SEEK_END)
         file_size = file.file.tell()
         await file.seek(0)
 

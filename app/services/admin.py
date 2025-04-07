@@ -59,7 +59,7 @@ class AdminService():
                 )
 
                 if update_result.modified_count < 1 :
-                    await self.deleteSong(song_id=song_id,background_tasks=background_tasks)
+                    await self.delete_song(song_id=song_id,background_tasks=background_tasks)
 
             song_out_dict = song.model_dump()
             song_out = SongOut(**song_out_dict)
@@ -80,7 +80,7 @@ class AdminService():
             raise InternalServerError() from err
 
 
-    async def deleteSong(self, song_id: str, background_tasks: BackgroundTasks):
+    async def delete_song(self, song_id: str, background_tasks: BackgroundTasks):
         try :
             if ObjectId.is_valid(song_id):
                 raise HTTPException(
