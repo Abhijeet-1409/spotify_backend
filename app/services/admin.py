@@ -12,12 +12,10 @@ from app.models.song import SongDB
 from app.schemas.song import SongIn , SongOut
 from app.errors.exceptions import InternalServerError, SongInconsistencyError
 from app.db.connection import DatabaseConnection
-from app.dependencies.dependencies import (
-    sync_cloudinary_file_upload ,
-    delete_song_cloudinary_resource
+from app.utils.utils import (
+    sync_cloudinary_file_upload,
+    delete_cloudinary_resource_based_on_id
 )
-
-
 
 
 class AdminService():
@@ -71,11 +69,11 @@ class AdminService():
         except HTTPException as http_err:
             cause = http_err.__cause__
             if isinstance(cause,CloudinaryBaseError):
-                background_tasks.add_task(delete_song_cloudinary_resource,song_id)
+                background_tasks.add_task(delete_cloudinary_resource_based_on_id,song_id)
             raise http_err
 
         except SongInconsistencyError as inconsistency_err:
-            background_tasks.add_task(delete_song_cloudinary_resource,inconsistency_err.song_id)
+            background_tasks.add_task(delete_cloudinary_resource_based_on_id,inconsistency_err.song_id)
             raise InternalServerError() from inconsistency_err
 
         except Exception as err:
@@ -100,7 +98,7 @@ class AdminService():
                     detail="Song with a id {song_id} does not exists."
                 )
 
-            background_tasks.add_task(delete_song_cloudinary_resource,song_id)
+            background_tasks.add_task(delete_cloudinary_resource_based_on_id,song_id)
 
             update_result: UpdateResult = await self.db_instance.albums.update_one(
                 {"_id": song_doc['album_id']},
