@@ -160,3 +160,39 @@ def delete_song_cloudinary_resource(song_id: str):
     except Exception as err:
         pass # add exception to the logs later
 
+def custom_file_validation(max_size_mb: int, file_type: str):
+    allowed_image_formats: List[str] = ["jpg", "jpeg", "png", "gif", "webp"]
+    allowed_audio_formats: List[str] = ["mp3", "wav", "flac", "aac", "ogg"]
+
+    async def validate_file(file: UploadFile) -> UploadFile:
+        await file.seek(0, 2)
+        file_size = file.file.tell()
+        await file.seek(0)
+
+        errors: List[str] = []
+
+        file_name = file.filename.strip() if file.filename else ""
+        file_extension = os.path.splitext(file_name)[-1].lower().strip(".")
+
+        allowed_formats = (
+            allowed_image_formats if file_type.lower() == "image" else allowed_audio_formats
+        )
+
+        if not file_name or " " in file_name or not file_name[0].isalpha():
+            errors.append(f"Invalid file name '{file_name}'. It must not contain spaces and must start with a letter.")
+
+        if file_extension not in allowed_formats:
+            errors.append(
+                f"Invalid file type '{file_extension}' for {file_type}. Allowed types: {', '.join(allowed_formats)}."
+            )
+
+        max_size_bytes = max_size_mb * 1024 * 1024
+        if file_size > max_size_bytes:
+            errors.append(f"File '{file_name}' exceeds the size limit of {max_size_mb}MB.")
+
+        if errors:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=errors)
+
+        return file
+
+    return validate_file
