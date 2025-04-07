@@ -2,16 +2,22 @@ import asyncio
 
 from bson import ObjectId
 
-from pymongo.results import InsertOneResult, UpdateResult, DeleteResult
+from pymongo.results import InsertOneResult, UpdateResult
 
 from fastapi import HTTPException, UploadFile, status, BackgroundTasks
 
 from cloudinary.exceptions import Error as CloudinaryBaseError
 
 from app.models.song import SongDB
-from app.schemas.song import SongIn , SongOut
-from app.errors.exceptions import InternalServerError, SongInconsistencyError
+from app.models.album import AlbumDB
+from app.schemas.song import SongIn, SongOut
+from app.schemas.album import AlbumIn
 from app.db.connection import DatabaseConnection
+from app.errors.exceptions import (
+    InternalServerError,
+    SongInconsistencyError,
+    AlbumInconsistencyError
+)
 from app.utils.utils import (
     sync_cloudinary_file_upload,
     delete_cloudinary_resource_based_on_id
@@ -122,6 +128,41 @@ class AdminService():
 
         except HTTPException as http_err :
             raise http_err
+
+        except Exception as err:
+            raise InternalServerError() from err
+
+
+    async def create_album(
+            self,
+            album_data: AlbumIn,
+            image_file: UploadFile,
+            background_tasks: BackgroundTasks,
+        ):
+        try :
+
+            album_db_dict: dict = album_data.model_dump()
+            album: AlbumDB = AlbumDB(**album_db_dict)
+            album_id: str = str(album.id)
+
+            image_response = await asyncio.to_thread(sync_cloudinary_file_upload,image_file,"image",album_id)
+
+            album.image_url = image_response['secure_url']
+
+            insert_result: InsertOneResult = await self.db_instance.albums.insert_one(album.model_dump(by_alias=True))
+
+            if not insert_result.inserted_id:
+                raise AlbumInconsistencyError(album_id=album_id)
+
+        except HTTPException as http_err:
+            cause = http_err.__cause__
+            if isinstance(cause,CloudinaryBaseError):
+                background_tasks.add_task(delete_cloudinary_resource_based_on_id,album_id)
+            raise http_err
+
+        except AlbumInconsistencyError as inconsistency_err:
+            background_tasks.add_task(delete_cloudinary_resource_based_on_id,inconsistency_err.album_id)
+            raise InternalServerError() from inconsistency_err
 
         except Exception as err:
             raise InternalServerError() from err
