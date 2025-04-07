@@ -16,6 +16,7 @@ from app.core.config import Settings
 from app.db.connection import DatabaseConnection
 from app.schemas.song import SongIn
 from app.services.auth import AuthService
+from app.services.admin import AdminService
 from app.errors.exceptions import InternalServerError
 
 from clerk_backend_api import Clerk
@@ -196,3 +197,6 @@ def custom_file_validation(max_size_mb: int, file_type: str):
         return file
 
     return validate_file
+
+def get_admin_service(db_instance: Annotated[DatabaseConnection, Depends(get_database_connection)]) -> AdminService:
+    return AdminService(db_instance=db_instance)
