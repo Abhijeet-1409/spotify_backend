@@ -21,6 +21,7 @@ class Settings(BaseSettings) :
     CLOUDINARY_API_KEY: str = "default_cloudianry_api_key" # use env var
     CLOUDINARY_CLOUD_NAME: str = "default_cloudinary_cloud_name" # use env var
     ADMIN_EMAIL: str = "default_admin_email" # use env file
+    MAX_FILE_SIZE_MB: int = 10 # use env file
 
     @property
     def MONGO_URI(self) -> str:
