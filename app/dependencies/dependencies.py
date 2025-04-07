@@ -15,6 +15,7 @@ from fastapi import Depends, Form, Request, HTTPException, status, UploadFile
 from app.core.config import Settings
 from app.db.connection import DatabaseConnection
 from app.schemas.song import SongIn
+from app.schemas.album import AlbumIn
 from app.services.auth import AuthService
 from app.services.admin import AdminService
 from app.errors.exceptions import InternalServerError
@@ -157,3 +158,21 @@ def custom_file_validation(max_size_mb: int, file_type: str):
 
 def get_admin_service(db_instance: Annotated[DatabaseConnection, Depends(get_database_connection)]) -> AdminService:
     return AdminService(db_instance=db_instance)
+
+def extract_album_data(
+        title: Annotated[str, Form(title="Title",description="Album's title")],
+        artist: Annotated[str, Form(title="Artist",description="Album's artist")],
+        release_year: Annotated[int, Form(title="Release Year",description="Album's release year")],
+    ) -> AlbumIn :
+
+    try :
+        return AlbumIn(title=title,artist=artist,release_year=release_year)
+
+    except ValidationError as validation_err:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+             detail=[{"loc": err["loc"], "msg": err["msg"]} for err in validation_err.errors()]
+        )
+
+    except Exception as err:
+        raise InternalServerError() from err
