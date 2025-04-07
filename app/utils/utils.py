@@ -40,12 +40,16 @@ def delete_cloudinary_resource_based_on_id(id: str):
     try :
 
         prefix = f"{id}/"
-        cloudinary.api.delete_resources_by_prefix(prefix=prefix)
-        cloudinary.api.delete_folder(id)
+        response_image = cloudinary.api.delete_resources_by_prefix(prefix=prefix, resource_type="image")
+        response_audio = cloudinary.api.delete_resources_by_prefix(prefix=prefix, resource_type="video")
+        response_folder = cloudinary.api.delete_folder(id)
 
     except CloudinaryNotFound as cloudinary_not_found:
-        pass # add exception to the logs later
+        # pass # add exception to the logs later
+        print("cloudinary_not_found",cloudinary_not_found)
     except CloudinaryBadRequest as cloudinary_bad_request:
-        pass # add exception to the logs later
+        # pass # add exception to the logs later
+        print("cloudinary_bad_request",cloudinary_bad_request)
     except Exception as err:
-        pass # add exception to the logs later
+        # pass # add exception to the logs later
+        print("err",Exception)

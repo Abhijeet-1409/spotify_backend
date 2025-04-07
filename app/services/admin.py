@@ -23,7 +23,13 @@ class AdminService():
     def __init__(self, db_instance: DatabaseConnection):
         self.db_instance = db_instance
 
-    async def create_song(self, image_file: UploadFile, audio_file: UploadFile, song_data: SongIn, background_tasks: BackgroundTasks) -> SongOut:
+    async def create_song(
+            self,
+            song_data: SongIn,
+            image_file: UploadFile,
+            audio_file: UploadFile,
+            background_tasks: BackgroundTasks
+        ) -> SongOut:
         try :
 
             song_db_dict = song_data.model_dump()
@@ -41,8 +47,10 @@ class AdminService():
             song: SongDB = SongDB(**song_db_dict)
             song_id = str(song.id)
 
-            image_response = await asyncio.to_thread(sync_cloudinary_file_upload,image_file,"image",song_id)
-            audio_response = await asyncio.to_thread(sync_cloudinary_file_upload,audio_file,"video",song_id)
+            image_coro = asyncio.to_thread(sync_cloudinary_file_upload,image_file,"image",song_id)
+            audio_coro = asyncio.to_thread(sync_cloudinary_file_upload,audio_file,"video",song_id)
+
+            image_response, audio_response = await asyncio.gather(image_coro, audio_coro)
 
             song.image_url = image_response['secure_url']
             song.audio_url = audio_response['secure_url']
@@ -60,6 +68,7 @@ class AdminService():
 
                 if update_result.modified_count < 1 :
                     await self.delete_song(song_id=song_id,background_tasks=background_tasks)
+                    raise InternalServerError()
 
             song_out_dict = song.model_dump()
             song_out = SongOut(**song_out_dict)
@@ -80,9 +89,9 @@ class AdminService():
             raise InternalServerError() from err
 
 
-    async def delete_song(self, song_id: str, background_tasks: BackgroundTasks):
+    async def delete_song(self, song_id: str, background_tasks: BackgroundTasks) -> dict:
         try :
-            if ObjectId.is_valid(song_id):
+            if not ObjectId.is_valid(song_id):
                 raise HTTPException(
                     status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                     detail=f"{song_id} is not a valid id."
@@ -90,23 +99,24 @@ class AdminService():
 
             song_object_id = ObjectId(song_id)
 
-            song_doc = await self.db_instance.songs.find_one_and_delete({"_id", song_object_id})
+            song_doc = await self.db_instance.songs.find_one_and_delete({"_id": song_object_id})
 
             if not song_doc:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Song with a id {song_id} does not exists."
+                    detail=f"Song with a id {song_id} does not exists."
                 )
 
+            if song_doc['album_id']:
+                update_result: UpdateResult = await self.db_instance.albums.update_one(
+                    {"_id": song_doc['album_id']},
+                    {"$pull": {"songs": song_object_id}}
+                )
+
+                if update_result.modified_count < 1:
+                    raise InternalServerError()
+
             background_tasks.add_task(delete_cloudinary_resource_based_on_id,song_id)
-
-            update_result: UpdateResult = await self.db_instance.albums.update_one(
-                {"_id": song_doc['album_id']},
-                {"$pull": {"songs": song_object_id}}
-            )
-
-            if update_result.modified_count < 1:
-                raise InternalServerError()
 
             return {"message": "Song deleted successfully"}
 

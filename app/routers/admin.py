@@ -1,6 +1,7 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, UploadFile, BackgroundTasks, File
+from fastapi.responses import JSONResponse
+from fastapi import APIRouter, Depends, UploadFile, BackgroundTasks, File, Path, status
 
 from app.core.config import Settings
 from app.schemas.song import SongIn, SongOut
@@ -44,3 +45,21 @@ async def create_song_with_files(
     )
 
     return song_out
+
+
+@router.post("/songs/{id}")
+async def delete_song(
+        id: Annotated[str, Path()],
+        background_tasks: BackgroundTasks,
+        admin_service: Annotated[AdminService, Depends(get_admin_service)],
+    ) -> JSONResponse:
+
+    response_data: dict = await admin_service.delete_song(
+        song_id=id,
+        background_tasks=background_tasks
+    )
+
+    return JSONResponse(
+        status_code=status.HTTP_200_OK,
+        content=response_data,
+    )
