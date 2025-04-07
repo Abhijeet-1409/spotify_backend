@@ -22,3 +22,10 @@ class SongInconsistencyError(Exception):
 
     def __init__(self, song_id: str):
         self.song_id = song_id
+
+
+class AlbumInconsistencyError(Exception):
+    """Raised when there is an inconsistency while creating the album."""
+
+    def __init__(self, album_id: str):
+        self.album_id = album_id
