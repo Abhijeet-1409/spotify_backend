@@ -115,13 +115,16 @@ def extract_song_data(
     except Exception as err:
         raise InternalServerError() from err
 
+def get_file_size(file: UploadFile) -> int:
+    file.file.seek(0, os.SEEK_END)
+    return file.file.tell()
+
 def custom_file_validation(max_size_mb: int, file_type: str):
     allowed_image_formats: List[str] = ["jpg", "jpeg", "png", "gif", "webp"]
     allowed_audio_formats: List[str] = ["mp3", "wav", "flac", "aac", "ogg"]
 
     async def validate_file(file: UploadFile) -> UploadFile:
-        file.file.seek(0, os.SEEK_END)
-        file_size = file.file.tell()
+        file_size: int = await asyncio.to_thread(get_file_size,file)
         await file.seek(0)
 
         errors: List[str] = []

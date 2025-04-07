@@ -42,7 +42,7 @@ class AdminService():
             song_id = str(song.id)
 
             image_response = await asyncio.to_thread(sync_cloudinary_file_upload,image_file,"image",song_id)
-            audio_response = await asyncio.to_thread(sync_cloudinary_file_upload,audio_file,"audio",song_id)
+            audio_response = await asyncio.to_thread(sync_cloudinary_file_upload,audio_file,"video",song_id)
 
             song.image_url = image_response['secure_url']
             song.audio_url = audio_response['secure_url']

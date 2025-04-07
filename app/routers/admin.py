@@ -25,7 +25,7 @@ song_audio_validation = custom_file_validation(MAX_FILE_SIZE_MB, "Audio")
 
 
 @router.post("/songs")
-async def handle_create_song(
+async def create_song_with_files(
         song_data: Annotated[SongIn, Depends(extract_song_data)],
         image_file: Annotated[UploadFile, File()],
         audio_file: Annotated[UploadFile, File()],
