@@ -15,3 +15,10 @@ class InternalServerError(HTTPException):
             detail=detail,
             headers=headers
         )
+
+
+class SongInconsistencyError(Exception):
+    """Raised when there is an inconsistency while creating the song."""
+
+    def __init__(self, song_id: str):
+        self.song_id = song_id
