@@ -47,7 +47,7 @@ async def create_song_with_files(
     return song_out
 
 
-@router.post("/songs/{id}")
+@router.delete("/songs/{id}")
 async def delete_song(
         id: Annotated[str, Path()],
         background_tasks: BackgroundTasks,

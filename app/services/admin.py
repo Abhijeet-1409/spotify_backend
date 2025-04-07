@@ -11,7 +11,7 @@ from cloudinary.exceptions import Error as CloudinaryBaseError
 from app.models.song import SongDB
 from app.models.album import AlbumDB
 from app.schemas.song import SongIn, SongOut
-from app.schemas.album import AlbumIn
+from app.schemas.album import AlbumIn, AlbumOut
 from app.db.connection import DatabaseConnection
 from app.errors.exceptions import (
     InternalServerError,
@@ -138,7 +138,7 @@ class AdminService():
             album_data: AlbumIn,
             image_file: UploadFile,
             background_tasks: BackgroundTasks,
-        ):
+        ) -> AlbumOut :
         try :
 
             album_db_dict: dict = album_data.model_dump()
@@ -153,6 +153,11 @@ class AdminService():
 
             if not insert_result.inserted_id:
                 raise AlbumInconsistencyError(album_id=album_id)
+
+            album_out_dict = album.model_dump()
+            album_out = AlbumOut(**album_out_dict)
+
+            return album_out
 
         except HTTPException as http_err:
             cause = http_err.__cause__
