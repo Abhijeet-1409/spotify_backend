@@ -1,3 +1,5 @@
+from typing import Any
+
 from fastapi import HTTPException, status, UploadFile
 
 from app.errors.exceptions import InternalServerError
@@ -61,3 +63,16 @@ def delete_album_and_related_resources(album_id: str, song_ids: list[str]):
 
     for id in song_ids:
         delete_cloudinary_resource_based_on_id(id=id)
+
+
+def album_doc_to_dict(album_doc: Any) -> dict:
+    album_dict: dict = dict()
+    album_dict['_id'] = album_doc['_id']
+    album_dict['title'] = album_doc['title']
+    album_dict['songs'] = album_doc['songs']
+    album_dict['artist'] = album_doc['artist']
+    album_dict['image_url'] = album_doc['image_url']
+    album_dict['created_at'] = album_doc['created_at']
+    album_dict['release_year'] = album_doc['release_year']
+
+    return album_dict
