@@ -29,6 +29,9 @@ class AlbumService():
 
             return album_out_list
 
+        except HTTPException as http_err:
+            raise http_err
+
         except Exception as err :
             raise InternalServerError() from err
 
@@ -56,6 +59,9 @@ class AlbumService():
             album_out: AlbumOut = AlbumOut(**album_dict)
 
             return album_out
+
+        except HTTPException as http_err:
+            raise http_err
 
         except Exception as err :
             raise InternalServerError() from err
