@@ -20,7 +20,8 @@ from app.errors.exceptions import (
 )
 from app.utils.utils import (
     sync_cloudinary_file_upload,
-    delete_cloudinary_resource_based_on_id
+    delete_album_and_related_resources,
+    delete_cloudinary_resource_based_on_id,
 )
 
 
@@ -168,6 +169,40 @@ class AdminService():
         except AlbumInconsistencyError as inconsistency_err:
             background_tasks.add_task(delete_cloudinary_resource_based_on_id,inconsistency_err.album_id)
             raise InternalServerError() from inconsistency_err
+
+        except Exception as err:
+            raise InternalServerError() from err
+
+
+    async def delete_album(self, album_id: str, background_tasks: BackgroundTasks) -> dict:
+        try :
+            if not ObjectId.is_valid(album_id):
+                raise HTTPException(
+                    status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                    detail=f"{album_id} is not a valid id."
+                )
+
+            album_object_id = ObjectId(album_id)
+
+            album_doc = await self.db_instance.albums.find_one_and_delete({"_id": album_object_id})
+
+            if not album_doc:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Song with a id {album_id} does not exists."
+                )
+
+            song_ids = album_doc['songs']
+            song_str_ids = [str(id) for id in song_ids] if song_ids else []
+
+            await self.db_instance.songs.delete_many({"_id": {"$in": song_ids}})
+
+            background_tasks.add_task(delete_album_and_related_resources,album_id,song_str_ids)
+
+            return {"message": "Song deleted successfully"}
+
+        except HTTPException as http_err :
+            raise http_err
 
         except Exception as err:
             raise InternalServerError() from err

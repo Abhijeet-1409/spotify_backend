@@ -53,3 +53,11 @@ def delete_cloudinary_resource_based_on_id(id: str):
     except Exception as err:
         # pass # add exception to the logs later
         print("err",Exception)
+
+
+def delete_album_and_related_resources(album_id: str, song_ids: list[str]):
+
+    delete_cloudinary_resource_based_on_id(id=album_id)
+
+    for id in song_ids:
+        delete_cloudinary_resource_based_on_id(id=id)
