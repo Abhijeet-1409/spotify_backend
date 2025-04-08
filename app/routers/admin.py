@@ -34,7 +34,7 @@ async def create_song_with_files(
         song_data: Annotated[SongIn, Depends(extract_song_data)],
         admin_service: Annotated[AdminService, Depends(get_admin_service)],
         background_tasks: BackgroundTasks
-    ) -> SongOut :
+    ) -> SongOut:
 
     validated_image_file: UploadFile = await song_image_validation(image_file)
     validated_audio_file: UploadFile = await song_audio_validation(audio_file)
@@ -50,10 +50,10 @@ async def create_song_with_files(
 
 
 @router.delete("/songs/{id}")
-async def delete_song(
+async def delete_song_with_files(
         id: Annotated[str, Path()],
-        background_tasks: BackgroundTasks,
         admin_service: Annotated[AdminService, Depends(get_admin_service)],
+        background_tasks: BackgroundTasks,
     ) -> JSONResponse:
 
     response_data: dict = await admin_service.delete_song(
@@ -73,7 +73,7 @@ async def create_album_with_files(
         album_data: Annotated[AlbumIn, Depends(extract_album_data)],
         admin_service: Annotated[AdminService, Depends(get_admin_service)],
         background_tasks: BackgroundTasks
-    ) -> AlbumOut :
+    ) -> AlbumOut:
 
     validated_image_file: UploadFile = await song_image_validation(image_file)
 
@@ -84,3 +84,21 @@ async def create_album_with_files(
     )
 
     return album_out
+
+
+@router.delete("/alubms/{id}")
+async def delete_albums_with_files(
+        id: Annotated[str, Path()],
+        admin_service: Annotated[AdminService, Depends(get_admin_service)],
+        background_tasks: BackgroundTasks
+    ) -> JSONResponse:
+
+    response_data: dict = await admin_service.delete_album(
+        album_id=id,
+        background_tasks=background_tasks
+    )
+
+    return JSONResponse(
+        status_code=status.HTTP_200_OK,
+        content=response_data,
+    )

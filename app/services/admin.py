@@ -189,7 +189,7 @@ class AdminService():
             if not album_doc:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=f"Song with a id {album_id} does not exists."
+                    detail=f"Album with a id {album_id} does not exists."
                 )
 
             song_ids = album_doc['songs']
@@ -199,7 +199,7 @@ class AdminService():
 
             background_tasks.add_task(delete_album_and_related_resources,album_id,song_str_ids)
 
-            return {"message": "Song deleted successfully"}
+            return {"message": "Album deleted successfully"}
 
         except HTTPException as http_err :
             raise http_err
