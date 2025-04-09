@@ -19,6 +19,7 @@ from app.schemas.album import AlbumIn
 from app.services.auth import AuthService
 from app.services.admin import AdminService
 from app.services.album import AlbumService
+from app.services.song import SongService
 from app.errors.exceptions import InternalServerError
 
 from clerk_backend_api import Clerk
@@ -187,3 +188,6 @@ def extract_album_data(
 
 def get_album_service(db_instance: Annotated[DatabaseConnection, Depends(get_database_connection)]) -> AlbumService:
     return AlbumService(db_instance=db_instance)
+
+def get_song_service(db_instance: Annotated[DatabaseConnection, Depends(get_database_connection)]) -> SongService:
+    return SongService(db_instance=db_instance)
