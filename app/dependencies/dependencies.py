@@ -36,9 +36,13 @@ def get_database_connection(settings: Annotated[Settings, Depends(get_settings)]
 def get_auth_service(db_instance: Annotated[DatabaseConnection, Depends(get_database_connection)]) -> AuthService:
     return AuthService(db_instance=db_instance)
 
+@lru_cache()
+def init_clerk_sdk(secret_key: str) -> Clerk:
+    return Clerk(bearer_auth=secret_key)
+
 def get_clerk_sdk(settings: Annotated[Settings, Depends(get_settings)]) -> Clerk:
     try :
-        return Clerk(bearer_auth=settings.CLERK_SECRET_KEY)
+        return init_clerk_sdk(settings.CLERK_SECRET_KEY)
     except Exception as err :
         raise InternalServerError() from err
 
@@ -59,6 +63,9 @@ async def protect_route(request: Request, clerk_sdk: Annotated[Clerk, Depends(ge
         clerk_user: ClerkUser = await clerk_sdk.users.get_async(user_id=user_id)
 
         return clerk_user
+
+    except HTTPException as http_err :
+        raise http_err
 
     except Exception as err :
         raise InternalServerError() from err
