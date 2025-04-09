@@ -3,12 +3,15 @@ from typing import Annotated
 from fastapi.responses import JSONResponse
 from fastapi import APIRouter, Depends, UploadFile, BackgroundTasks, File, Path, status
 
+from clerk_backend_api.models.user import User as ClerkUser
+
 from app.core.config import Settings
 from app.schemas.song import SongIn, SongOut
 from app.schemas.album import AlbumIn, AlbumOut
 from app.services.admin import AdminService
 from app.dependencies.dependencies import (
     get_settings,
+    require_admin,
     get_admin_service,
     extract_song_data,
     extract_album_data,
@@ -25,6 +28,14 @@ MAX_FILE_SIZE_MB: int = settings.MAX_FILE_SIZE_MB
 
 song_image_validation = custom_file_validation(MAX_FILE_SIZE_MB, "Image")
 song_audio_validation = custom_file_validation(MAX_FILE_SIZE_MB, "Audio")
+
+
+@router.get("/check")
+async def check_admin(admin: Annotated[ClerkUser, Depends(require_admin)]):
+    return JSONResponse(
+        status_code=status.HTTP_200_OK,
+        content={"admin": True}
+    )
 
 
 @router.post("/songs")
