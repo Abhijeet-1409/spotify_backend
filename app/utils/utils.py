@@ -76,3 +76,17 @@ def album_doc_to_dict(album_doc: Any) -> dict:
     album_dict['release_year'] = album_doc['release_year']
 
     return album_dict
+
+
+def song_doc_to_dict(song_doc: Any) -> dict:
+    song_dict: dict = dict()
+    song_dict['_id'] = song_doc['_id']
+    song_dict['title'] = song_doc['title']
+    song_dict['artist'] = song_doc['artist']
+    song_dict['album_id'] = song_doc['album_id']
+    song_dict['duration'] = song_doc['duration']
+    song_dict['image_url'] = song_doc['image_url']
+    song_dict['audio_url'] = song_doc['audio_url']
+    song_dict['created_at'] = song_doc['created_at']
+
+    return song_dict
