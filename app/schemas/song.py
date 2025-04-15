@@ -4,7 +4,7 @@ from datetime import datetime
 
 from typing import Optional
 
-from pydantic import BaseModel, Field, field_validator, field_serializer
+from pydantic import BaseModel, Field, HttpUrl, field_validator, field_serializer
 
 from app.models.song import SongDB
 
@@ -37,6 +37,11 @@ class SongIn(BaseModel):
 
 
 class SongOut(SongDB):
+
+    image_url: HttpUrl = Field(title="Image Url",description="Song's cover image",alias="imageUrl")
+    audio_url: HttpUrl = Field(title="Audio Url",description="Song's actual audio",alias="audioUrl")
+    created_at: datetime = Field(title="Created At",description="Timestamp when the song was created",alias="createdAt")
+    album_id: Optional[ObjectId] = Field(title="Album Id",description="Reference to album which song belongs to",alias="albumId")
 
     @field_serializer('id')
     def serialize_id(self, value: ObjectId, _info) -> str:
