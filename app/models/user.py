@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from pydantic import BaseModel,EmailStr,HttpUrl,Field,field_serializer
 
 class UserDB(BaseModel):
-    id: str = Field(title="Id",description="clerkId value is used as user's _id",alias="_id")
+    clerk_id: str = Field(title="Clerk Id",description="User's clerk id")
     full_name: str = Field(title="Full Name",description="User's full name")
     email: EmailStr = Field(title="Email",description="User's email must be unique")
     image_url: HttpUrl = Field(title="Image Url",description="User's profile image")
@@ -19,4 +19,5 @@ class UserDB(BaseModel):
     model_config = {
         "extra": "ignore",
         "populate_by_name": True,
+        'arbitrary_types_allowed': True,
     }
