@@ -20,7 +20,8 @@ from app.dependencies.dependencies import (
 
 router = APIRouter(
     prefix="/api/admin",
-    tags=["admin"]
+    tags=["admin"],
+    dependencies=[Depends(require_admin)]
 )
 
 settings: Settings = get_settings()
