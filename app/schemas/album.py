@@ -5,6 +5,7 @@ from bson import ObjectId
 from datetime import datetime
 
 from app.models.album import AlbumDB
+from app.schemas.song import SongOut
 
 from pydantic import BaseModel, Field, HttpUrl, field_serializer
 
@@ -31,3 +32,12 @@ class AlbumOut(AlbumDB):
     @field_serializer('songs')
     def serialize_songs(self, value: List[ObjectId], _info) -> List[str]:
         return [str(id) for id in value] if value else []
+
+
+class AlbumDetailOut(AlbumOut):
+
+    songs: List[SongOut] = Field(title="Songs",description="Album's song")
+
+    @field_serializer('songs')
+    def serialize_songs(self, value: List[SongOut], _info) -> List[SongOut]:
+        return value
