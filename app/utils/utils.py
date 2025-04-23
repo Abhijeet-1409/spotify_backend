@@ -90,3 +90,15 @@ def song_doc_to_dict(song_doc: Any) -> dict:
     song_dict['created_at'] = song_doc['created_at']
 
     return song_dict
+
+
+def user_doc_to_dict(user_doc: Any) -> dict:
+    user_dict: dict = dict()
+    user_dict['_id'] = user_doc['_id']
+    user_dict['email'] = user_doc['email']
+    user_dict['clerk_id'] = user_doc['clerk_id']
+    user_dict['full_name'] = user_doc['full_name']
+    user_dict['image_url'] = user_doc['image_url']
+    user_dict['created_at'] = user_doc['created_at']
+
+    return user_dict
