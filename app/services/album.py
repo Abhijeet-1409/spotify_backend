@@ -6,10 +6,11 @@ from motor.motor_asyncio import AsyncIOMotorCursor
 
 from fastapi import HTTPException, status
 
-from app.schemas.album import AlbumOut
+from app.schemas.song import SongOut
+from app.schemas.album import AlbumOut, AlbumDetailOut
 from app.db.connection import DatabaseConnection
 from app.errors.exceptions import InternalServerError
-from app.utils.utils import album_doc_to_dict
+from app.utils.utils import album_doc_to_dict, song_doc_to_dict
 
 
 class AlbumService():
@@ -36,7 +37,7 @@ class AlbumService():
             raise InternalServerError() from err
 
 
-    async def fetch_album_by_id(self, album_id: str) -> AlbumOut:
+    async def fetch_album_by_id(self, album_id: str) -> AlbumDetailOut:
         try :
 
             if not ObjectId.is_valid(album_id):
@@ -56,9 +57,16 @@ class AlbumService():
                 )
 
             album_dict: dict = album_doc_to_dict(album_doc)
-            album_out: AlbumOut = AlbumOut(**album_dict)
+            song_cursor: AsyncIOMotorCursor = self.db_instance.songs.find({'album_id': album_object_id})
 
-            return album_out
+            song_doc_list = await song_cursor.to_list()
+
+            song_dict_list: List[dict] = [ song_doc_to_dict(song_doc) for song_doc in song_doc_list ]
+            song_out_list: List[SongOut] = [ SongOut(**song_dict) for song_dict in song_dict_list]
+            album_dict['songs'] = song_out_list
+            album_detial_out = AlbumDetailOut(**album_dict)
+
+            return album_detial_out
 
         except HTTPException as http_err:
             raise http_err
