@@ -41,8 +41,8 @@ async def check_admin(admin: Annotated[ClerkUser, Depends(require_admin)]):
 
 @router.post("/songs")
 async def create_song_with_files(
-        image_file: Annotated[UploadFile, File()],
-        audio_file: Annotated[UploadFile, File()],
+        image_file: Annotated[UploadFile, File(alias="imageFile")],
+        audio_file: Annotated[UploadFile, File(alias="audioFile")],
         song_data: Annotated[SongIn, Depends(extract_song_data)],
         admin_service: Annotated[AdminService, Depends(get_admin_service)],
         background_tasks: BackgroundTasks
@@ -81,7 +81,7 @@ async def delete_song_with_files(
 
 @router.post("/albums")
 async def create_album_with_files(
-        image_file: Annotated[UploadFile, File()],
+        image_file: Annotated[UploadFile, File(alias="imageFile")],
         album_data: Annotated[AlbumIn, Depends(extract_album_data)],
         admin_service: Annotated[AdminService, Depends(get_admin_service)],
         background_tasks: BackgroundTasks
@@ -98,7 +98,7 @@ async def create_album_with_files(
     return album_out
 
 
-@router.delete("/alubms/{id}")
+@router.delete("/albums/{id}")
 async def delete_albums_with_files(
         id: Annotated[str, Path()],
         admin_service: Annotated[AdminService, Depends(get_admin_service)],
