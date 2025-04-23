@@ -49,7 +49,6 @@ class SongService():
             raise http_err
 
         except Exception as err :
-            print(err)
             raise InternalServerError() from err
 
 
