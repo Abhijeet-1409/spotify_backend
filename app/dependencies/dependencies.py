@@ -21,6 +21,7 @@ from app.services.admin import AdminService
 from app.services.album import AlbumService
 from app.services.song import SongService
 from app.services.stat import StatService
+from app.services.user import UserService
 from app.errors.exceptions import InternalServerError
 
 from clerk_backend_api import Clerk
@@ -54,11 +55,10 @@ def sync_authenticate_request(request: Request, clerk_sdk: Clerk) -> RequestStat
 async def protect_route(request: Request, clerk_sdk: Annotated[Clerk, Depends(get_clerk_sdk)]) -> ClerkUser:
     try :
         request_state: RequestState = await asyncio.to_thread(sync_authenticate_request,request,clerk_sdk)
-
         if not request_state.is_signed_in :
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Unauthorized - you must be logged in",
+                detail=f"{request_state.message}",
             )
 
         user_id: str = request_state.payload.get("sub")
@@ -105,7 +105,7 @@ def extract_song_data(
         title: Annotated[str, Form(title="Title",description="Song's title")],
         artist: Annotated[str, Form(title="Artist",description="Artist's Name")],
         duration: Annotated[int, Form(title="Duration",description="Song's duration")],
-        album_id: Annotated[
+        albumId: Annotated[
                     Optional[str],
                     Form(
                         title="Album Id",
@@ -115,7 +115,7 @@ def extract_song_data(
     ) -> SongIn :
 
     try :
-        return SongIn(title=title,artist=artist,duration=duration,album_id=album_id)
+        return SongIn(title=title,artist=artist,duration=duration,album_id=albumId)
 
     except ValidationError as validation_err:
         raise HTTPException(
@@ -172,11 +172,11 @@ def get_admin_service(db_instance: Annotated[DatabaseConnection, Depends(get_dat
 def extract_album_data(
         title: Annotated[str, Form(title="Title",description="Album's title")],
         artist: Annotated[str, Form(title="Artist",description="Album's artist")],
-        release_year: Annotated[int, Form(title="Release Year",description="Album's release year")],
+        releaseYear: Annotated[int, Form(title="Release Year",description="Album's release year")],
     ) -> AlbumIn :
 
     try :
-        return AlbumIn(title=title,artist=artist,release_year=release_year)
+        return AlbumIn(title=title,artist=artist,release_year=releaseYear)
 
     except ValidationError as validation_err:
         raise HTTPException(
@@ -193,5 +193,8 @@ def get_album_service(db_instance: Annotated[DatabaseConnection, Depends(get_dat
 def get_song_service(db_instance: Annotated[DatabaseConnection, Depends(get_database_connection)]) -> SongService:
     return SongService(db_instance=db_instance)
 
-def get_stat_service(db_instance: Annotated[DatabaseConnection, Depends(get_database_connection)]) -> SongService:
+def get_stat_service(db_instance: Annotated[DatabaseConnection, Depends(get_database_connection)]) -> StatService:
     return StatService(db_instance=db_instance)
+
+def get_user_service(db_instance: Annotated[DatabaseConnection, Depends(get_database_connection)]) -> UserService:
+    return UserService(db_instance=db_instance)
