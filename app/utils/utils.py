@@ -102,3 +102,14 @@ def user_doc_to_dict(user_doc: Any) -> dict:
     user_dict['created_at'] = user_doc['created_at']
 
     return user_dict
+
+
+def message_doc_to_dic(message_doc: Any) -> dict:
+    message_dict = dict()
+    message_dict['_id'] = message_doc['_id']
+    message_dict['content'] = message_doc['content']
+    message_dict['sender_id'] = message_doc['sender_id']
+    message_dict['created_at'] = message_doc['created_at']
+    message_dict['receiver_id'] = message_doc['receiver_id']
+
+    return message_dict

@@ -1,3 +1,4 @@
+import re
 from typing import List
 
 from fastapi import HTTPException
@@ -81,6 +82,24 @@ class SongService():
     async def fetch_trending_songs(self) -> List[SongOut]:
         try :
             song_out_list: List[SongOut] = await self._fetch_random_songs(count=4)
+
+            return song_out_list
+
+        except HTTPException as http_err :
+            raise http_err
+
+        except Exception as err :
+            raise InternalServerError() from err
+
+    async def fetch_song_by_name(self, name: str) -> List[SongOut]:
+        try :
+            escaped = re.escape(name)
+            song_cursor:  AsyncIOMotorCursor = self.db_instance.songs.find({'title': { '$regex': f'^{escaped}', '$options': 'i' }})
+
+            song_doc_list = await song_cursor.to_list()
+
+            song_dict_list: List[dict] = [ song_doc_to_dict(song_doc) for song_doc in song_doc_list ]
+            song_out_list: List[SongOut] = [ SongOut(**song_dict) for song_dict in song_dict_list ]
 
             return song_out_list
 

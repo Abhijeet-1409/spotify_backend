@@ -1,6 +1,6 @@
 from typing import List, Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Path
 
 from clerk_backend_api.models.user import User as ClerkUser
 
@@ -49,5 +49,15 @@ async def get_made_for_you_songs(song_service: Annotated[SongService, Depends(ge
 async def get_trending_songs(song_service: Annotated[SongService, Depends(get_song_service)]) -> List[SongOut]:
 
     song_out_list: List[SongOut] = await song_service.fetch_trending_songs()
+
+    return song_out_list
+
+@router.get("/{name}")
+async def get_song_by_name(
+        name: Annotated[str, Path()],
+        song_service: Annotated[SongService, Depends(get_song_service)]
+    ) -> List[SongOut]:
+
+    song_out_list: List[SongOut] = await song_service.fetch_song_by_name(name)
 
     return song_out_list

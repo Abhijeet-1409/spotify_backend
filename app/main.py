@@ -1,5 +1,7 @@
 import uvicorn
 
+from socketio import ASGIApp
+
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException, status
@@ -7,6 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import Settings
 from app.db.connection import DatabaseConnection
+from app.web_socket.socket import sio as socket_server
 from app.routers import admin,album,auth,song,stat,user
 from app.dependencies.dependencies import get_settings, init_cloudinary, init_clerk_sdk
 
@@ -57,5 +60,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+combined_app = ASGIApp(socket_server,other_asgi_app=app)
+
+
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(combined_app, host="0.0.0.0", port=8000)

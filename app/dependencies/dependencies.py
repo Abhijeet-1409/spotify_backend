@@ -22,6 +22,7 @@ from app.services.album import AlbumService
 from app.services.song import SongService
 from app.services.stat import StatService
 from app.services.user import UserService
+from app.services.socket import SocketService
 from app.errors.exceptions import InternalServerError
 
 from clerk_backend_api import Clerk
@@ -198,3 +199,8 @@ def get_stat_service(db_instance: Annotated[DatabaseConnection, Depends(get_data
 
 def get_user_service(db_instance: Annotated[DatabaseConnection, Depends(get_database_connection)]) -> UserService:
     return UserService(db_instance=db_instance)
+
+def get_socket_service() -> SocketService:
+    settings: Settings = get_settings()
+    db_instance: DatabaseConnection = DatabaseConnection(settings=settings)
+    return SocketService(db_instance=db_instance)
