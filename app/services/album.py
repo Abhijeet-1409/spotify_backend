@@ -1,3 +1,4 @@
+import re
 from typing import List
 
 from bson import ObjectId
@@ -69,6 +70,24 @@ class AlbumService():
             return album_detial_out
 
         except HTTPException as http_err:
+            raise http_err
+
+        except Exception as err :
+            raise InternalServerError() from err
+
+    async def fetch_album_by_name(self, name: str) -> List[AlbumOut]:
+        try :
+            escaped = re.escape(name)
+            album_cursor: AsyncIOMotorCursor = self.db_instance.albums.find({'title': { '$regex': f'^{escaped}', '$options': 'i' }})
+
+            album_doc_list = await album_cursor.to_list()
+
+            album_dict_list: List[dict] = [ album_doc_to_dict(album_doc) for album_doc in album_doc_list ]
+            album_out_list: List[AlbumOut] = [ AlbumOut(**album_dict) for album_dict in album_dict_list ]
+
+            return album_out_list
+
+        except HTTPException as http_err :
             raise http_err
 
         except Exception as err :

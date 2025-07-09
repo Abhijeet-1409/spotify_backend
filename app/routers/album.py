@@ -13,12 +13,13 @@ router = APIRouter(
 )
 
 
-@router.get("/")
-async def get_all_albums(
+@router.get("/search/{name}")
+async def get_album_by_name(
+        name: Annotated[str, Path()],
         album_service: Annotated[AlbumService, Depends(get_album_service)]
     ) -> List[AlbumOut]:
 
-    album_out_list: List[AlbumOut] = await album_service.fetch_all_albums()
+    album_out_list: List[AlbumOut] = await album_service.fetch_album_by_name(name)
 
     return album_out_list
 
@@ -32,3 +33,13 @@ async def get_album_by_id(
     album_detail_out: AlbumOut = await album_service.fetch_album_by_id(album_id=id)
 
     return album_detail_out
+
+
+@router.get("/")
+async def get_all_albums(
+        album_service: Annotated[AlbumService, Depends(get_album_service)]
+    ) -> List[AlbumOut]:
+
+    album_out_list: List[AlbumOut] = await album_service.fetch_all_albums()
+
+    return album_out_list

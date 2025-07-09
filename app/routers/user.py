@@ -1,10 +1,11 @@
 from typing import Annotated, List
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Path
 
 from clerk_backend_api.models.user import User as ClerkUser
 
 from app.schemas.user import UserOut
+from app.schemas.message import MessageOut
 from app.services.user import UserService
 from app.dependencies.dependencies import (
     protect_route,
@@ -29,3 +30,15 @@ async def get_all_users(
 
     return user_out_list
 
+
+@router.get("/messages/{userId}")
+async def get_messages(
+        userId: Annotated[str, Path()],
+        user: Annotated[ClerkUser, Depends(protect_route)],
+        user_service: Annotated[UserService, Depends(get_user_service)]
+    ) -> List[MessageOut]:
+
+    current_user_id: str = user.id
+    message_out_list: List[MessageOut] = await user_service.fetch_messages(current_user_id,userId)
+
+    return message_out_list
